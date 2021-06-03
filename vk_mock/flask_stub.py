@@ -15,7 +15,7 @@ class RoutesForMock:
     @app.route('/vk_id/<name>', methods=['GET'])
     def get_user_surname(name):
         if name:
-            return jsonify({'vk_id': ('id' + name)}), 200
+            return jsonify({'vk_id': ('id' + name.replace(' ', ''))}), 200
         else:
             return jsonify(f'ID for user {name} not found'), 404
 
