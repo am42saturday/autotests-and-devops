@@ -1,42 +1,24 @@
 pipeline {
-    
+
     agent any
-    
+
     stages {
-        
+
         stage("Clear directory") {
             steps {
                 cleanWs()
             }
         }
-        
-        stage('Clone docker files') {
-            steps {
-                sh 'mkdir devops'
-                dir('devops'){
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: 'master']],
-                        userRemoteConfigs: [[
-                            credentialsId: 'b562eea5-2921-42ee-8ee1-0fa3b8750da6',
-                            url: 'git@github.com:am42saturday/final_project_mail_devops.git']]
-                    ])
-                }
-            }
-        }
 
-        stage('Clone tests') {
+        stage('Clone repo with devops and tests') {
             steps {
-                sh 'mkdir tests'
-                dir('tests'){
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: 'master']],
-                        userRemoteConfigs: [[
-                            credentialsId: 'b562eea5-2921-42ee-8ee1-0fa3b8750da6',
-                            url: 'git@github.com:am42saturday/final_project_mail.git']]
-                    ])
-                }
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'master']],
+                    userRemoteConfigs: [[
+                        credentialsId: 'b562eea5-2921-42ee-8ee1-0fa3b8750da6',
+                        url: 'git@github.com:am42saturday/final_project_all.git']]
+                ])
             }
         }
 
@@ -55,7 +37,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE'){
                     script{
-                        sh 'cd tests && python3 -m pytest ${MARK_TESTS}'
+                        sh 'cd tests && python3 -m pytest -n ${NUM} ${MARK_TESTS}'
                     }
                 }
             }
@@ -83,4 +65,4 @@ pipeline {
             }
         }
     }
-} 
+}

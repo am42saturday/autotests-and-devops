@@ -40,13 +40,6 @@ def api_client(config):
     return ApiClient(config['url'])
 
 
-# @pytest.fixture(scope='session')
-# def config(request):
-#     url = request.config.getoption('--url')
-#     debug_log = request.config.getoption('--debug_log')
-#     return {'url': url, 'debug_log': debug_log}
-
-
 @pytest.fixture(scope='function')
 def test_dir(request):
     test_name = request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_')

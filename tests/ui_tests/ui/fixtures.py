@@ -83,18 +83,6 @@ def driver(config, test_dir):
     browser.quit()
 
 
-@pytest.fixture(scope='function', params=['chrome', 'firefox'])
-def all_drivers(config, request, test_dir):
-    url = config['url']
-
-    browser = get_driver(request.param, download_dir=test_dir)
-
-    browser.get(url)
-    browser.maximize_window()
-    yield browser
-    browser.quit()
-
-
 @pytest.fixture(scope='function', autouse=True)
 def ui_report(driver, request):
     test_name = request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_')

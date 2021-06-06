@@ -131,6 +131,8 @@ class TestRegistration(ApiBase):
     # Test open all links (in new tabs)
 
 
-class TestUsers(ApiBase):
-    authorize = False
+# class TestUsers(ApiBase):
+#     authorize = False
+#
+#     def test_add_user
 
