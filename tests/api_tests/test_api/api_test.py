@@ -29,8 +29,8 @@ class TestAuth(ApiBase):
             (EXISTING_USERNAME, '', (200, 'Welcome to the TEST SERVER')),
             ('', EXISTING_PASSWORD, (200, 'Welcome to the TEST SERVER')),
             ('wrong_login', 'wrong_password', (401, 'Invalid username or password')),
-            (''.join(random.choice(string.ascii_letters) for i in range(5)), 'qazswxde', (401, 'Incorrect username length')),
-            (''.join(random.choice(string.ascii_letters) for i in range(17)), 'qazswxde', (401, 'Incorrect username length')),
+            (''.join(random.choice(string.ascii_letters) for i in range(2)), 'qazswxde', (401, 'Incorrect username length')),
+            (''.join(random.choice(string.ascii_letters) for i in range(19)), 'qazswxde', (401, 'Incorrect username length')),
             (EXISTING_USERNAME, 'incorrect_pass', (401, 'Invalid username or password')),
             ('incorrect_name', EXISTING_PASSWORD, (401, 'Invalid username or password')),
         ]
@@ -117,8 +117,8 @@ class TestRegistration(ApiBase):
     @pytest.mark.parametrize(
         'login, email, password, expected_result',
         [
-            (None, EXISTING_EMAIL, 'qazswxde', (409, 'User already exists')),
-            (EXISTING_USERNAME, 'normal@email.com', 'qazswxde', (409, 'User already exists')),
+            (None, EXISTING_EMAIL, None, (409, 'User already exists')),
+            (EXISTING_USERNAME, None, None, (409, 'User already exists')),
             (None, None, EXISTING_PASSWORD, (200, 'Logged as')),
         ]
     )
@@ -141,8 +141,24 @@ class TestUsers(ApiBase):
     authorize = True
 
     @pytest.mark.API
+    @allure.title('запросы неавторизованным пользователем')
+    @allure.description('Тест на попытку выполнить API запросы неавторизованным пользователем')
+    def test_api_requests_unauthorized(self):
+        self.api_client.get_logout()
+        user, res = self.api_client.post_add_user()
+        assert res.status_code == 401
+        res_del = self.api_client.get_delete(self.base_user.username)
+        assert res_del.status_code == 401
+        res_block = self.api_client.get_block_user(self.base_user.username)
+        assert res_block.status_code == 401
+        res_unblock = self.api_client.get_block_user(self.base_user.username)
+        assert res_unblock.status_code == 401
+
+    @pytest.mark.API
+    @allure.title('Добавление пользователя')
+    @allure.description('Тест на добавление пользователя')
     def test_api_add_user(self):
-        self.api_client.post_add_user(expected_status=201)
+        self.api_client.post_add_user()
 
     @pytest.mark.parametrize(
         'login, email, password',
@@ -162,6 +178,8 @@ class TestUsers(ApiBase):
         ]
     )
     @pytest.mark.API
+    @allure.title('Негативный тест на добавление пользователя')
+    @allure.description('Негативный тест на добавление пользователя')
     def test_api_negative_add_user(self, login, email, password):
         user, res = self.api_client.post_add_user(login, email, password)
         assert res.status_code == 400
@@ -175,6 +193,9 @@ class TestUsers(ApiBase):
             (None, None, EXISTING_PASSWORD, 201),
         ]
     )
+    @pytest.mark.API
+    @allure.title('Попытка добавления существующего пользователя')
+    @allure.description('Тест на повторное добавление существующего пользователя')
     def test_api_add_existing_user(self, login, email, password, expected_result):
         if login == EXISTING_USERNAME:
             login = self.base_user.username
@@ -194,6 +215,8 @@ class TestUsers(ApiBase):
         ]
     )
     @pytest.mark.API
+    @allure.title('Удаление пользователя')
+    @allure.description('Тест на удаление пользователя')
     def test_api_delete_user(self, login, expected_result):
         user, res = self.api_client.post_add_user()
         if login == EXISTING_USERNAME:
@@ -203,7 +226,62 @@ class TestUsers(ApiBase):
         assert res_del.text == expected_result[1]
         # assert user.username not in db
 
-    # http://<APP_HOST>:<APP_PORT>/api/block_user/<username>
-    # http://<APP_HOST>:<APP_PORT>/api/accept_user/<username>
+    @pytest.mark.parametrize(
+        'login, expected_result',
+        [
+            (EXISTING_USERNAME, (200, 'User was blocked!')),
+            ('', (404, 'User does not exist!')), # непонятное отображение ошибки
+            ('Not_existing', (404, 'User does not exist!')),
+        ]
+    )
+    @pytest.mark.API
+    @allure.title('Блокировка пользователя')
+    @allure.description('Тест блокировки пользователя')
+    def test_api_block_user(self, login, expected_result):
+        user, res = self.api_client.post_add_user()
+        if login == EXISTING_USERNAME:
+            login = user.username
+        res = self.api_client.get_block_user(login)
+        assert res.status_code == expected_result[0]
+        assert res.text == expected_result[1]
+        #  access = 0 в БД
+
+    @pytest.mark.API
+    @allure.title('Блокировка заблокированного пользователя')
+    @allure.description('Тест блокировки уже заблокированного пользователя')
+    def test_api_block_blocked_user(self):
+        user, res = self.api_client.post_add_user()
+        self.api_client.get_block_user(user.username)
+        res = self.api_client.get_block_user(user.username)
+        assert res.status_code == 304
+
+    @pytest.mark.parametrize(
+        'login, expected_result',
+        [
+            (EXISTING_USERNAME, (200, 'User access granted!')),
+            ('', (404, 'User does not exist!')),
+            ('Not_existing', (404, 'User does not exist!')),
+        ]
+    )
+    @pytest.mark.API
+    @allure.title('Разблокировка пользователя')
+    @allure.description('Тест на разблокировку пользователя')
+    def test_api_unblock_user(self, login, expected_result):
+        user, res = self.api_client.post_add_user()
+        if login == EXISTING_USERNAME:
+            login = user.username
+            self.api_client.get_block_user(login)
+        res = self.api_client.get_unblock_user(login)
+        assert res.status_code == expected_result[0]
+        assert res.text == expected_result[1]
+        #  access = 0 в БД
+
+    @pytest.mark.API
+    @allure.title('Разблокировка незаблокированного пользователя')
+    @allure.description('Тест на разблокировку пользователя, который не заблокирован')
+    def test_api_unblock_not_blocked_user(self):
+        user, res = self.api_client.post_add_user()
+        res = self.api_client.get_unblock_user(user.username)
+        assert res.status_code == 304
 
 

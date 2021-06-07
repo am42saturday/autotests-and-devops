@@ -151,5 +151,31 @@ class ApiClient:
 
         return result
 
+    @allure.step('Заблокировать пользователя')
+    def get_block_user(self, username):
+        location = urljoin(self.base_url, '/api/block_user/' + username)
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'gzip, deflate, br',
+        }
+
+        result = self._request('GET', location, headers=headers)
+
+        return result
+
+    @allure.step('Разблокировать пользователя')
+    def get_unblock_user(self, username):
+        location = urljoin(self.base_url, '/api/accept_user/' + username)
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'gzip, deflate, br',
+        }
+
+        result = self._request('GET', location, headers=headers)
+
+        return result
+
 
 
