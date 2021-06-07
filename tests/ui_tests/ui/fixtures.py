@@ -2,6 +2,7 @@ import os
 
 import allure
 import pytest
+from _pytest.fixtures import FixtureRequest
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from webdriver_manager.chrome import ChromeDriverManager
@@ -73,30 +74,38 @@ def get_driver(config, download_dir):
 
 
 @pytest.fixture(scope='function')
-def driver(config, test_dir):
-    url = config['url']
-    browser = get_driver(config, download_dir=test_dir)
+def driver(config, test_dir, request: FixtureRequest):
+    marker = request.node.get_closest_marker('UI')
 
-    browser.get(url)
-    browser.maximize_window()
-    yield browser
-    browser.quit()
+    if marker is not None:
+        url = config['url']
+        browser = get_driver(config, download_dir=test_dir)
+
+        browser.get(url)
+        browser.maximize_window()
+        yield browser
+        browser.quit()
+    else:
+        yield 0
 
 
 @pytest.fixture(scope='function', autouse=True)
 def ui_report(driver, request):
-    test_name = request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_')
-    if not os.path.isdir(tests_logs_dir):
-        os.mkdir(tests_logs_dir)
-    browser_logfile = os.path.join(tests_logs_dir, test_name) if len(test_name) < 50 else test_name[50]
-    with open(browser_logfile + '/test.log', 'w') as f:
-        for i in driver.get_log('browser'):
-            f.write(f"{i['level']} - {i['source']}\n{i['message']}\n\n")
+    if driver:
+        test_name = request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_')
+        if not os.path.isdir(tests_logs_dir):
+            os.mkdir(tests_logs_dir)
+        browser_logfile = os.path.join(tests_logs_dir, test_name) if len(test_name) < 50 else test_name[50]
+        with open(browser_logfile + '/test.log', 'w') as f:
+            for i in driver.get_log('browser'):
+                f.write(f"{i['level']} - {i['source']}\n{i['message']}\n\n")
 
-    with open(browser_logfile + '/test.log', 'r') as f:
-        allure.attach(f.read(), 'browser.log', attachment_type=allure.attachment_type.TEXT)
+        with open(browser_logfile + '/test.log', 'r') as f:
+            allure.attach(f.read(), 'browser.log', attachment_type=allure.attachment_type.TEXT)
 
-    failed_tests_count = request.session.testsfailed
-    yield
-    if request.session.testsfailed > failed_tests_count:
-        allure.attach(driver.get_screenshot_as_png(), "Screenshot", allure.attachment_type.PNG)
+        failed_tests_count = request.session.testsfailed
+        yield
+        if request.session.testsfailed > failed_tests_count:
+            allure.attach(driver.get_screenshot_as_png(), "Screenshot", allure.attachment_type.PNG)
+    else:
+        yield 0
