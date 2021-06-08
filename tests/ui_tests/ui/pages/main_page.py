@@ -38,6 +38,11 @@ class MainPage(BasePage):
         else:
             return True
 
+    @allure.step('Нажать на кнопку Home')
+    def click_home(self):
+        self.click(self.locators.HOME_BUTTON_LOCATOR)
+
+    @allure.step('Открыть выпадающее меню')
     def open_dropdow_menu(self, locator):
         self.click(locator)
         assert self.driver.current_url == 'http://127.0.0.1:8095/welcome/'

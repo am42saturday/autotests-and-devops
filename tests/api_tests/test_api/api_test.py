@@ -27,7 +27,6 @@ class TestAPIUsers(ApiBase):
     authorize = True
 
     @pytest.mark.API
-    @allure.title('Проверить статус приложения')
     @allure.description('Тест на проверку статуса приложения')
     def test_api_check_app_status(self):
         """
@@ -40,9 +39,12 @@ class TestAPIUsers(ApiBase):
         assert parsed_res['status'] == 'ok'
 
     @pytest.mark.API
-    @allure.title('Запросы неавторизованным пользователем')
     @allure.description('Тест на попытку выполнить API запросы неавторизованным пользователем')
     def test_api_requests_unauthorized(self):
+        """
+        Тест на попытку выполнить API запросы неавторизованным пользователем
+        Ожидается статус код 401
+        """
         self.api_client.get_logout()
         user, res = self.api_client.post_add_user()
         assert res.status_code == 401, f"Got status code {res.status_code}, expected 401"
@@ -54,9 +56,14 @@ class TestAPIUsers(ApiBase):
         assert res_unblock.status_code == 401, f"Got status code {res.status_code}, expected 401"
 
     @pytest.mark.API
-    @allure.title('Добавление пользователя')
     @allure.description('Тест на добавление пользователя')
     def test_api_add_user(self):
+        """
+        Тест на добавление пользователя
+
+        Ожидается статус код 201
+        :return:
+        """
         user, res = self.api_client.post_add_user()
         assert res.status_code == 201, f"Got status code {res.status_code}, expected 201"
 
@@ -83,7 +90,6 @@ class TestAPIUsers(ApiBase):
              'invalid_email', 'empty_pass', 'empty_username', 'long_pass']
     )
     @pytest.mark.API
-    @allure.title('Негативный тест на добавление пользователя')
     @allure.description('Негативный тест на добавление пользователя')
     def test_api_negative_add_user(self, login, email, password):
         user, res = self.api_client.post_add_user(login, email, password)
@@ -103,8 +109,7 @@ class TestAPIUsers(ApiBase):
         ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.API
-    # @allure.title('Попытка добавления существующего пользователя')
-    # @allure.description('Тест на повторное добавление существующего пользователя')
+    @allure.description('Тест на повторное добавление существующего пользователя')
     def test_api_add_existing_user(self, login, email, password, expected_result):
         if login == EXISTING_USERNAME:
             login = self.base_user.username
@@ -130,7 +135,6 @@ class TestAPIUsers(ApiBase):
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
-    @allure.title('Удаление пользователя')
     @allure.description('Тест на удаление пользователя')
     def test_api_delete_user(self, login, expected_result):
         user, res = self.api_client.post_add_user()
@@ -157,7 +161,6 @@ class TestAPIUsers(ApiBase):
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
-    @allure.title('Блокировка пользователя')
     @allure.description('Тест блокировки пользователя')
     def test_api_block_user(self, login, expected_result):
         user, res = self.api_client.post_add_user()
@@ -175,7 +178,6 @@ class TestAPIUsers(ApiBase):
             assert db_data[0].access == 0
 
     @pytest.mark.API
-    @allure.title('Блокировка заблокированного пользователя')
     @allure.description('Тест блокировки уже заблокированного пользователя')
     def test_api_block_blocked_user(self):
         user, res = self.api_client.post_add_user()
@@ -198,7 +200,6 @@ class TestAPIUsers(ApiBase):
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
-    @allure.title('Разблокировка пользователя')
     @allure.description('Тест на разблокировку пользователя')
     def test_api_unblock_user(self, login, expected_result):
         user, res = self.api_client.post_add_user()
@@ -217,7 +218,6 @@ class TestAPIUsers(ApiBase):
             assert db_data[0].access == 1
 
     @pytest.mark.API
-    @allure.title('Разблокировка незаблокированного пользователя')
     @allure.description('Тест на разблокировку пользователя, который не заблокирован')
     def test_api_unblock_not_blocked_user(self):
         user, res = self.api_client.post_add_user()
@@ -240,7 +240,7 @@ class TestAuth(ApiBase):
     authorize = False
 
     @pytest.mark.API('API')
-    @allure.title('Успешная авторизация')
+    @allure.description('Успешная авторизация')
     def test_api_successful_login(self):
         res = self.api_client.post_login(self.base_user.username, self.base_user.password)
         assert res.request.url == 'http://127.0.0.1:8095/welcome/'
@@ -263,7 +263,6 @@ class TestAuth(ApiBase):
              'wrong_pass', 'wrong_login']
     )
     @pytest.mark.API
-    @allure.title('Неуспешная авторизация')
     @allure.description('Негативный тест на авторизацию')
     def test_api_unsuccessful_login(self, login, password, expected_result):
         if login == EXISTING_USERNAME:
@@ -277,7 +276,6 @@ class TestAuth(ApiBase):
         assert 'Test Server | Welcome!' not in res.text
 
     @pytest.mark.API
-    @allure.title('Тест на логаут')
     @allure.description('Тест на выход из сессии пользователя')
     def test_api_logout(self):
         self.api_client.post_login(self.base_user.username, self.base_user.password)
@@ -297,7 +295,6 @@ class TestRegistration(ApiBase):
     authorize = False
 
     @pytest.mark.API
-    @allure.title('Успешная регистрация пользователя')
     @allure.description('Тест успешной регистрации пользователя')
     def test_api_successful_registration(self):
         user, res = self.api_client.post_register()
@@ -331,7 +328,6 @@ class TestRegistration(ApiBase):
              'empty_pass', 'empty_username']
     )
     @pytest.mark.API
-    @allure.title('Регистрация пользователя с невалидными данными')
     @allure.description('Тест регистрации пользователя с невалидными данными')
     def test_api_registration_invalid_data(self, login, email, password, confirm_pass, expected_result):
         self.user, res = self.api_client.post_register(login, email, password, confirm_pass)
@@ -345,7 +341,6 @@ class TestRegistration(ApiBase):
         ids=['empty_term', 'term_n', 'term_123']
     )
     @pytest.mark.API
-    @allure.title('Регистрация пользователя без принятия согласия')
     @allure.description('Тест регистрации пользователя невалидное значение принятия согласия')
     def test_api_registration_without_acceptance(self, term):
         self.user, res = self.api_client.post_register(term=term)
@@ -363,7 +358,6 @@ class TestRegistration(ApiBase):
         ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.API
-    @allure.title('Регистрация существующего пользователя')
     @allure.description('Тест на попытку зарегистрировать пользователя с данными уже существующего пользователя')
     def test_api_create_existing_user(self, login, email, password, expected_result):
         if login == EXISTING_USERNAME:

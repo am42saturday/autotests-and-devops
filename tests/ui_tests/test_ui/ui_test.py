@@ -16,7 +16,6 @@ class TestLogin(BaseCase):
     authorize = False
 
     @pytest.mark.UI
-    @allure.title('Успешная авторизация')
     @allure.description('Тест успешной авторизации')
     def test_ui_successful_login(self):
         self.login_page.successful_login(self.base_user.username, self.base_user.password)
@@ -35,7 +34,6 @@ class TestLogin(BaseCase):
         ]
     )
     @pytest.mark.UI
-    @allure.title('Неуспешная авторизация')
     @allure.description('Негативный тест на авторизацию')
     def test_ui_unsuccessful_login(self, login, password, expected_result):
         if login == EXISTING_USERNAME:
@@ -45,7 +43,6 @@ class TestLogin(BaseCase):
         self.login_page.unsuccessful_login(login, password, expected_result)
 
     @pytest.mark.UI
-    @allure.title('Тест на логаут')
     @allure.description('Тест на выход из сессии пользователя')
     def test_ui_logout(self):
         self.login_page.open_registration_page()
@@ -58,7 +55,6 @@ class TestRegistration(BaseCase):
     authorize = False
 
     @pytest.mark.UI
-    @allure.title('Успешная регистрация пользователя')
     @allure.description('Тест успешной регистрации пользователя')
     def test_ui_successful_registration(self):
         self.login_page.open_registration_page()
@@ -88,7 +84,6 @@ class TestRegistration(BaseCase):
         ]
     )
     @pytest.mark.UI
-    @allure.title('Регистрация пользователя с невалидными данными')
     @allure.description('Тест регистрации пользователя с невалидными данными')
     def test_ui_registration_invalid_data(self, login, email, password, confirm_pass, expected_result):
         self.login_page.open_registration_page()
@@ -97,7 +92,6 @@ class TestRegistration(BaseCase):
         assert expected_result in self.driver.page_source
 
     @pytest.mark.UI
-    @allure.title('Регистрация пользователя без принятия согласия')
     @allure.description('Тест регистрации пользователя без принятия согласия')
     def test_ui_registration_without_acceptance(self):
         self.login_page.open_registration_page()
@@ -113,7 +107,6 @@ class TestRegistration(BaseCase):
         ]
     )
     @pytest.mark.UI
-    @allure.title('Регистрация существующего пользователя')
     @allure.description('Тест на попытку зарегистрировать пользователя с данными уже существующего пользователя')
     def test_ui_register_existing_user(self, login, email, password, expected_result):
         if login == EXISTING_USERNAME:
@@ -131,13 +124,11 @@ class TestMainPage(BaseCase):
     authorize = True
 
     @pytest.mark.UI
-    @allure.title('Проверка имени пользователя')
     @allure.description('Проверка отображения имени авторизованного пользователя')
     def test_ui_logged_user_text(self):
         assert 'Logged as ' + self.base_user.username in self.driver.page_source
 
     @pytest.mark.UI
-    @allure.title('Проверка VK ID пользователя')
     @allure.description('Проверка отображения VK ID авторизованного пользователя')
     def test_ui_vk_id(self):
         assert 'VK ID: id' + self.base_user.username in self.driver.page_source
@@ -161,7 +152,6 @@ class TestMainPage(BaseCase):
         ]
     )
     @pytest.mark.UI
-    @allure.title('Проверка открытия всех ссылок')
     @allure.description('Проверка открытия всех ссылок в новых вкладок')
     def test_ui_open_links(self, locators, expected_result):
         self.main_page.open_redirect_page(locators, expected_result)
@@ -175,7 +165,6 @@ class TestMainPage(BaseCase):
         ]
     )
     @pytest.mark.UI
-    @allure.title('Нажать на все кнопки панели навигации')
     @allure.description('Проверка открытия всех выпадающих списков на панели навигации')
     def test_ui_check_dropdown(self, locator, expected_results):
         self.main_page.open_dropdow_menu(locator)
@@ -183,9 +172,12 @@ class TestMainPage(BaseCase):
             assert result in self.driver.page_source
 
     @pytest.mark.UI
-    @allure.title('Проверка дзена питона')
     @allure.description('Проверка отображения дзена питона')
     def test_ui_zen_of_python(self):
         assert self.main_page.check_zen_of_python_text()
 
-    # Test press Home
+    @pytest.mark.UI
+    @allure.description('Проверка кнопки Home')
+    def test_ui_home_button(self):
+        self.main_page.click_home()
+        assert self.driver.current_url == 'http://127.0.0.1:8095/welcome/'
