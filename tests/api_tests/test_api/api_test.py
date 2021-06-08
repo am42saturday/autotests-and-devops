@@ -142,7 +142,7 @@ class TestAPIUsers(ApiBase):
         [
             (EXISTING_USERNAME, (204, '')),
             ('Not_existing', (404, 'User does not exist!')),
-            ('', (404, 'User does not exist!')),
+            ('', (404, '404')),
             (CURRENT_USER, (204, ''))
         ],
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
@@ -372,7 +372,7 @@ class TestRegistration(ApiBase):
             ('TooLooongUsername', None, 'qwerty', 'qwerty', 'Incorrect username length'),
             ('S', None, 'qazswxde', 'qazswxde', 'Incorrect username length'),
             (None, '', 'qazswxde', 'qazswxde', 'Incorrect email length'),
-            (None, 'tqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopest@email.com', 'qazswxde', 'qazswxde',
+            (None, 'tqwertyuiopqwertyuiopqfgfwertyuiopqwertyuiopqwertyuiopest@email.com', 'qazswxde', 'qazswxde',
              'Incorrect email length'),
             (None, 'a@b.c', 'qazswxde', 'qazswxde', 'Incorrect email length'),
             (None, 'test.ru', 'qazswxde', 'qazswxde', 'Invalid email address'),
