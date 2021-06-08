@@ -103,8 +103,8 @@ class TestAPIUsers(ApiBase):
         ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.API
-    @allure.title('Попытка добавления существующего пользователя')
-    @allure.description('Тест на повторное добавление существующего пользователя')
+    # @allure.title('Попытка добавления существующего пользователя')
+    # @allure.description('Тест на повторное добавление существующего пользователя')
     def test_api_add_existing_user(self, login, email, password, expected_result):
         if login == EXISTING_USERNAME:
             login = self.base_user.username
