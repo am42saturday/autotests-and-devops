@@ -27,7 +27,6 @@ class TestAPIUsers(ApiBase):
     authorize = True
 
     @pytest.mark.API
-    # @allure.description('Тест на проверку статуса приложения')
     def test_api_check_app_status(self):
         """
         Тест на проверку статуса приложения
@@ -39,7 +38,6 @@ class TestAPIUsers(ApiBase):
         assert parsed_res['status'] == 'ok'
 
     @pytest.mark.API
-    # @allure.description('Тест на попытку выполнить API запросы неавторизованным пользователем')
     def test_api_requests_unauthorized(self):
         """
         Тест на попытку выполнить API запросы неавторизованным пользователем
@@ -56,13 +54,12 @@ class TestAPIUsers(ApiBase):
         assert res_unblock.status_code == 401, f"Got status code {res.status_code}, expected 401"
 
     @pytest.mark.API
-    # @allure.description('Тест на добавление пользователя')
     def test_api_add_user(self):
         """
         Тест на добавление пользователя
 
         Ожидается статус код 201
-        :return:
+        Пользователь добавлен в бд
         """
         user, res = self.api_client.post_add_user()
         assert res.status_code == 201, f"Got status code {res.status_code}, expected 201"
@@ -90,8 +87,16 @@ class TestAPIUsers(ApiBase):
              'invalid_email', 'empty_pass', 'empty_username', 'long_pass']
     )
     @pytest.mark.API
-    @allure.description('Негативный тест на добавление пользователя')
     def test_api_negative_add_user(self, login, email, password):
+        """
+        Негативный тест на добавление пользователя
+
+        :param login
+        :param email
+        :param password
+        Ожидаемый статус код 400
+        Пользователь не добавлен в бд
+        """
         user, res = self.api_client.post_add_user(login, email, password)
         assert res.status_code == 400, f"Got status code {res.status_code}, expected 400"
 
@@ -108,9 +113,17 @@ class TestAPIUsers(ApiBase):
         ],
         ids=['existing_email', 'existing_username', 'existing_pass']
     )
-    @pytest.mark.API
-    @allure.description('Тест на повторное добавление существующего пользователя')
     def test_api_add_existing_user(self, login, email, password, expected_result):
+        """
+        Тест на повторное добавление существующего пользователя
+
+        :param login
+        :param email
+        :param password
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        Пользователь не добавлен в бд
+        """
         if login == EXISTING_USERNAME:
             login = self.base_user.username
         if password == EXISTING_PASSWORD:
@@ -135,8 +148,15 @@ class TestAPIUsers(ApiBase):
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
-    @allure.description('Тест на удаление пользователя')
     def test_api_delete_user(self, login, expected_result):
+        """
+        Тест на удаление пользователя
+
+        :param login
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        Пользователь не найден в бд
+        """
         user, res = self.api_client.post_add_user()
         if login == EXISTING_USERNAME:
             login = user.username
@@ -161,8 +181,15 @@ class TestAPIUsers(ApiBase):
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
-    @allure.description('Тест блокировки пользователя')
     def test_api_block_user(self, login, expected_result):
+        """
+        Тест блокировки пользователя
+
+        :param login
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        Параметр access пользователя при успешной блокировке = 0
+        """
         user, res = self.api_client.post_add_user()
         if login == EXISTING_USERNAME:
             login = user.username
@@ -178,8 +205,13 @@ class TestAPIUsers(ApiBase):
             assert db_data[0].access == 0
 
     @pytest.mark.API
-    @allure.description('Тест блокировки уже заблокированного пользователя')
     def test_api_block_blocked_user(self):
+        """
+        Тест блокировки уже заблокированного пользователя
+
+        Ожидаемый статус код 304
+        Параметр access пользователя = 0
+        """
         user, res = self.api_client.post_add_user()
         self.api_client.get_block_user(user.username)
         res = self.api_client.get_block_user(user.username)
@@ -200,8 +232,15 @@ class TestAPIUsers(ApiBase):
         ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
-    @allure.description('Тест на разблокировку пользователя')
     def test_api_unblock_user(self, login, expected_result):
+        """
+        Тест на разблокировку пользователя
+
+        :param login
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        Параметр access пользователя при успешной разблокировке = 1
+        """
         user, res = self.api_client.post_add_user()
         if login == EXISTING_USERNAME:
             login = user.username
@@ -218,8 +257,13 @@ class TestAPIUsers(ApiBase):
             assert db_data[0].access == 1
 
     @pytest.mark.API
-    @allure.description('Тест на разблокировку пользователя, который не заблокирован')
     def test_api_unblock_not_blocked_user(self):
+        """
+        Тест на разблокировку пользователя, который не заблокирован
+
+        Ожидаемый статус код 304
+        Параметр access пользователя = 1
+        """
         user, res = self.api_client.post_add_user()
         res = self.api_client.get_unblock_user(user.username)
         assert res.status_code == 304, f"Got status code {res.status_code}, expected 304"
@@ -240,8 +284,12 @@ class TestAuth(ApiBase):
     authorize = False
 
     @pytest.mark.API('API')
-    @allure.description('Успешная авторизация')
     def test_api_successful_login(self):
+        """
+        Успешная авторизация
+
+        Ожидаемый статус код 200
+        """
         res = self.api_client.post_login(self.base_user.username, self.base_user.password)
         assert res.request.url == 'http://127.0.0.1:8095/welcome/'
         assert res.status_code == 200, f"Got status code {res.status_code}, expected 200"
@@ -262,9 +310,16 @@ class TestAuth(ApiBase):
         ids=['empty_login_and_pass', 'empty_pass', 'empty_login', 'wrong_login_and_pass', 'short_login', 'long_login',
              'wrong_pass', 'wrong_login']
     )
-    @pytest.mark.API
-    @allure.description('Негативный тест на авторизацию')
+    @pytest.mark.API('API')
     def test_api_unsuccessful_login(self, login, password, expected_result):
+        """
+        Негативный тест на авторизацию
+
+        :param login
+        :param password
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        """
         if login == EXISTING_USERNAME:
             login = self.base_user.username
         if password == EXISTING_PASSWORD:
@@ -276,8 +331,13 @@ class TestAuth(ApiBase):
         assert 'Test Server | Welcome!' not in res.text
 
     @pytest.mark.API
-    @allure.description('Тест на выход из сессии пользователя')
+    @allure.description('')
     def test_api_logout(self):
+        """
+        Тест на выход из сессии пользователя
+
+        Ожидаемый статус код 200
+        """
         self.api_client.post_login(self.base_user.username, self.base_user.password)
         res = self.api_client.get_logout()
         assert res.status_code == 200, f"Got status code {res.status_code}, expected 200"
@@ -295,8 +355,12 @@ class TestRegistration(ApiBase):
     authorize = False
 
     @pytest.mark.API
-    @allure.description('Тест успешной регистрации пользователя')
     def test_api_successful_registration(self):
+        """
+        Тест успешной регистрации пользователя
+
+        Ожидаемый статус код 200
+        """
         user, res = self.api_client.post_register()
         assert res.request.url == 'http://127.0.0.1:8095/welcome/'
         assert res.status_code == 200, f"Got status code {res.status_code}, expected 200"
@@ -328,8 +392,17 @@ class TestRegistration(ApiBase):
              'empty_pass', 'empty_username']
     )
     @pytest.mark.API
-    @allure.description('Тест регистрации пользователя с невалидными данными')
     def test_api_registration_invalid_data(self, login, email, password, confirm_pass, expected_result):
+        """
+        Тест регистрации пользователя с невалидными данными
+
+        :param login
+        :param email
+        :param password
+        :param confirm_pass
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        """
         self.user, res = self.api_client.post_register(login, email, password, confirm_pass)
         assert res.status_code == 400, f"Got status code {res.status_code}, expected 400"
         assert expected_result in res.text
@@ -341,8 +414,13 @@ class TestRegistration(ApiBase):
         ids=['empty_term', 'term_n', 'term_123']
     )
     @pytest.mark.API
-    @allure.description('Тест регистрации пользователя невалидное значение принятия согласия')
     def test_api_registration_without_acceptance(self, term):
+        """
+        Тест регистрации пользователя невалидное значение принятия согласия
+
+        :param term
+        Ожидаемый статус код 400
+        """
         self.user, res = self.api_client.post_register(term=term)
         assert 'Registration' in res.text
         assert 'Test Server | Welcome!' not in res.text
@@ -358,8 +436,16 @@ class TestRegistration(ApiBase):
         ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.API
-    @allure.description('Тест на попытку зарегистрировать пользователя с данными уже существующего пользователя')
     def test_api_create_existing_user(self, login, email, password, expected_result):
+        """
+        Тест на попытку зарегистрировать пользователя с данными уже существующего пользователя
+
+        :param login
+        :param email
+        :param password
+        :param expected_result
+        Ожидаемый статус код содержится в expected_result
+        """
         if login == EXISTING_USERNAME:
             login = self.base_user.username
         if password == EXISTING_PASSWORD:
