@@ -5,6 +5,7 @@ import allure
 import pytest
 
 from api_tests.api.client import ApiClient
+from api_tests.api.mysql_client import MysqlClient
 from api_tests.utils.data import dir_for_test_logs
 from ui_tests.ui.fixtures import *
 
@@ -40,10 +41,18 @@ def api_client(config):
     return ApiClient(config['url'])
 
 
+@pytest.fixture(scope='session')
+def mysql_client():
+    mysql_client = MysqlClient()
+    mysql_client.connect()
+    yield mysql_client
+    mysql_client.connection.close()
+
+
 @pytest.fixture(scope='function')
 def test_dir(request):
     test_name = request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_')
-    test_dir = os.path.join(dir_for_test_logs, test_name) if len(test_name) < 50 else test_name[50]
+    test_dir = os.path.join(dir_for_test_logs, (test_name if len(test_name) < 100 else test_name[:100]))
     if os.path.exists(test_dir):
         shutil.rmtree(test_dir)
     os.makedirs(test_dir)
@@ -72,5 +81,3 @@ def logger(test_dir, config):
     for handler in log.handlers:
         handler.close()
 
-    with open(log_file, 'r') as f:
-        allure.attach(f.read(), 'test.log', attachment_type=allure.attachment_type.TEXT)

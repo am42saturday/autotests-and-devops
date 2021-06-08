@@ -25,11 +25,14 @@ class TestLogin(BaseCase):
         'login, password, expected_result',
         [
             ('', '', 'Welcome to the TEST SERVER'),
+            ('', None, 'Welcome to the TEST SERVER'),
+            (None, '', 'Welcome to the TEST SERVER'),
             ('wrong_login', 'wrong_password', 'Invalid username or password'),
             ('Stepy', 'qazswxde', 'Incorrect username length'),
             ('Sqazwsxedcrfvtgby', 'qazswxde', 'Incorrect username length'),
             (EXISTING_USERNAME, 'incorrect_pass', 'Invalid username or password'),
             ('incorrect_name', EXISTING_PASSWORD, 'Invalid username or password'),
+            # no access
         ]
     )
     @pytest.mark.UI
@@ -68,7 +71,7 @@ class TestRegistration(BaseCase):
         [
             ('TooLooongUsername', None, 'qwerty', 'qwerty', 'Incorrect username length'),
             ('S', None, 'qazswxde', 'qazswxde', 'Incorrect username length'),
-            (None, '', 'qazswxde', 'qazswxde', 'Incorrect email length'), # TODO should it say to fill in email field?
+            (None, '', 'qazswxde', 'qazswxde', 'Incorrect email length'),
             (None, 'tqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopest@email.com', 'qazswxde', 'qazswxde',
              'Incorrect email length'),
             (None, 'a@b.c', 'qazswxde', 'qazswxde', 'Incorrect email length'),
@@ -113,7 +116,7 @@ class TestRegistration(BaseCase):
     @pytest.mark.UI
     @allure.title('Регистрация существующего пользователя')
     @allure.description('Тест на попытку зарегистрировать пользователя с данными уже существующего пользователя')
-    def test_ui_create_existing_user(self, login, email, password, expected_result):
+    def test_ui_register_existing_user(self, login, email, password, expected_result):
         if login == EXISTING_USERNAME:
             login = self.base_user.username
         if email == EXISTING_EMAIL:

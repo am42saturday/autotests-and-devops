@@ -95,7 +95,7 @@ def ui_report(driver, request):
         test_name = request._pyfuncitem.nodeid.replace('/', '_').replace(':', '_')
         if not os.path.isdir(tests_logs_dir):
             os.mkdir(tests_logs_dir)
-        browser_logfile = os.path.join(tests_logs_dir, test_name) if len(test_name) < 50 else test_name[50]
+        browser_logfile = os.path.join(tests_logs_dir, (test_name if len(test_name) < 100 else test_name[:100]))
         with open(browser_logfile + '/test.log', 'w') as f:
             for i in driver.get_log('browser'):
                 f.write(f"{i['level']} - {i['source']}\n{i['message']}\n\n")

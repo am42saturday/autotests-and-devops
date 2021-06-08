@@ -1,5 +1,4 @@
 import logging
-import json
 from urllib.parse import urljoin
 
 import allure
