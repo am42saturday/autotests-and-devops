@@ -17,7 +17,7 @@ class LoginPage(BasePage):
         assert 'Logged as' in self.driver.page_source
 
     @allure.step('Неуспешная авторизация')
-    def unsuccessful_login(self, username, password, error):
+    def unsuccessful_login(self, username=None, password=None, error=''):
         self.write_text(self.locators.LOGIN_FIELD_LOCATOR, username)
         self.write_text(self.locators.PASSWORD_FIELD_LOCATOR, password)
         self.click(self.locators.LOGIN_BUTTON_LOCATOR, timeout=BASE_TIMEOUT)

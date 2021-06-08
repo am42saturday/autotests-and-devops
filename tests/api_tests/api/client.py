@@ -22,9 +22,6 @@ class ApiClient:
         self.base_url = base_url
         self.session = requests.Session()
 
-        self.csrf_token = None
-        self.sessionid_gtp = None
-
     @staticmethod
     def log_pre(method, url, headers, data, params):
         logger.info(f'Performing {method} request:\n'
@@ -113,6 +110,18 @@ class ApiClient:
             'Referer': self.base_url + '/welcome/',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept-Encoding': 'gzip, deflate, br',
+        }
+
+        result = self._request('GET', location, headers=headers)
+
+        return result
+
+    @allure.step('Получить статус приложения')
+    def get_app_status(self):
+        location = urljoin(self.base_url, '/status')
+
+        headers = {
+            'Content-Type': 'application/json',
         }
 
         result = self._request('GET', location, headers=headers)

@@ -25,14 +25,13 @@ class TestLogin(BaseCase):
         'login, password, expected_result',
         [
             ('', '', 'Welcome to the TEST SERVER'),
-            ('', None, 'Welcome to the TEST SERVER'),
-            (None, '', 'Welcome to the TEST SERVER'),
+            ('', 'qazswxde', 'Welcome to the TEST SERVER'),
+            ('Marrisa', '', 'Welcome to the TEST SERVER'),
             ('wrong_login', 'wrong_password', 'Invalid username or password'),
             ('Stepy', 'qazswxde', 'Incorrect username length'),
             ('Sqazwsxedcrfvtgby', 'qazswxde', 'Incorrect username length'),
             (EXISTING_USERNAME, 'incorrect_pass', 'Invalid username or password'),
             ('incorrect_name', EXISTING_PASSWORD, 'Invalid username or password'),
-            # no access
         ]
     )
     @pytest.mark.UI

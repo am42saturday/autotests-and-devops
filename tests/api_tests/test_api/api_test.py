@@ -1,3 +1,4 @@
+import json
 import random
 import string
 
@@ -25,7 +26,15 @@ class TestAPIUsers(ApiBase):
     """
     authorize = True
 
-    # check status
+    @pytest.mark.API
+    @allure.title('Проверить статус приложения')
+    @allure.description('Тест на проверку статуса приложения')
+    def test_api_check_app_status(self):
+        res = self.api_client.get_app_status()
+        assert res.status_code == 200
+        parsed_res = json.loads(res.content.decode())
+        assert parsed_res['status'] == 'ok'
+
 
     @pytest.mark.API
     @allure.title('Запросы неавторизованным пользователем')
