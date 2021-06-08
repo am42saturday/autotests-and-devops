@@ -27,7 +27,7 @@ class TestAPIUsers(ApiBase):
     authorize = True
 
     @pytest.mark.API
-    @allure.description('Тест на проверку статуса приложения')
+    # @allure.description('Тест на проверку статуса приложения')
     def test_api_check_app_status(self):
         """
         Тест на проверку статуса приложения
@@ -39,7 +39,7 @@ class TestAPIUsers(ApiBase):
         assert parsed_res['status'] == 'ok'
 
     @pytest.mark.API
-    @allure.description('Тест на попытку выполнить API запросы неавторизованным пользователем')
+    # @allure.description('Тест на попытку выполнить API запросы неавторизованным пользователем')
     def test_api_requests_unauthorized(self):
         """
         Тест на попытку выполнить API запросы неавторизованным пользователем
@@ -56,7 +56,7 @@ class TestAPIUsers(ApiBase):
         assert res_unblock.status_code == 401, f"Got status code {res.status_code}, expected 401"
 
     @pytest.mark.API
-    @allure.description('Тест на добавление пользователя')
+    # @allure.description('Тест на добавление пользователя')
     def test_api_add_user(self):
         """
         Тест на добавление пользователя
