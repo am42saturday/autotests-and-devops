@@ -30,11 +30,14 @@ class TestAPIUsers(ApiBase):
     @allure.title('Проверить статус приложения')
     @allure.description('Тест на проверку статуса приложения')
     def test_api_check_app_status(self):
+        """
+        Тест на проверку статуса приложения
+        Ожидается статус код 200
+        """
         res = self.api_client.get_app_status()
-        assert res.status_code == 200
+        assert res.status_code == 200, f"Got status code {res.status_code}, expected 200"
         parsed_res = json.loads(res.content.decode())
         assert parsed_res['status'] == 'ok'
-
 
     @pytest.mark.API
     @allure.title('Запросы неавторизованным пользователем')
@@ -63,19 +66,21 @@ class TestAPIUsers(ApiBase):
     @pytest.mark.parametrize(
         'login, email, password',
         [
-            (''.join(random.choice(string.ascii_letters) for i in range(3)), None, 'qazswxde'), # get 210 - and user created
-            ('TooLooongUsername', None, 'qazswxde'), # get 210 - and user not created
-            (None, '', None),  # creates user without email
-            ('', '', ''),  # returns 210 - doesnt create user
-            (None, 'tqwertyuiopqwertyuiopqwertyuiopqweetftuuhojikrxycfugyhtyuiopqwertyuiopest@emafhil.com', None), # returns 210 - doesnt create user
-            (None, ''.join(random.choice(string.ascii_letters) for i in range(3)), None),  # get 210 - and user created
-            (None, ''.join(random.choice(string.ascii_letters) for i in range(10)), None),  # get 210 - and user created
+            (''.join(random.choice(string.ascii_letters) for i in range(3)), None, 'qazswxde'),
+            ('TooLooongUsername', None, 'qazswxde'),
+            (None, '', None),
+            ('', '', ''),
+            (None, 'tqwertyuiopqwertyuiopqwertyuiopqweetftuuhojikrxycfugyhtyuiopqwertyuiopest@emafhil.com', None),
+            (None, ''.join(random.choice(string.ascii_letters) for i in range(3)), None),
+            (None, ''.join(random.choice(string.ascii_letters) for i in range(10)), None),
             (None, None, ''),
             ('', None, None),
             (None, None, 'qwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwe'
                          'rtyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqw'
                          'ertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwerty'),
-        ]
+        ],
+        ids=['short_username', 'long_username', 'empty_email', 'all_params_empty', 'long_email', 'short_email',
+             'invalid_email', 'empty_pass', 'empty_username', 'long_pass']
     )
     @pytest.mark.API
     @allure.title('Негативный тест на добавление пользователя')
@@ -94,7 +99,8 @@ class TestAPIUsers(ApiBase):
             (None, EXISTING_EMAIL, None, (304, 0)),
             (EXISTING_USERNAME, None, None, (304, 1)),
             (None, None, EXISTING_PASSWORD, (201, 1)),
-        ]
+        ],
+        ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.API
     @allure.title('Попытка добавления существующего пользователя')
@@ -120,7 +126,8 @@ class TestAPIUsers(ApiBase):
             ('Not_existing', (404, 'User does not exist!')),
             ('', (404, 'User does not exist!')),
             (CURRENT_USER, (204, ''))
-        ]
+        ],
+        ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
     @allure.title('Удаление пользователя')
@@ -142,11 +149,12 @@ class TestAPIUsers(ApiBase):
     @pytest.mark.parametrize(
         'login, expected_result',
         [
-            (EXISTING_USERNAME, (200, 'User was blocked!', 1)),
-            ('', (404, '404', 0)),
+            (EXISTING_USERNAME, (200, 'User was blocked!')),
             ('Not_existing', (404, 'User does not exist!')),
+            ('', (404, '404')),
             (CURRENT_USER, (200, 'User was blocked!'))
-        ]
+        ],
+        ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
     @allure.title('Блокировка пользователя')
@@ -183,10 +191,11 @@ class TestAPIUsers(ApiBase):
         'login, expected_result',
         [
             (EXISTING_USERNAME, (200, 'User access granted!')),
-            ('', (404, '404')),
             ('Not_existing', (404, 'User does not exist!')),
+            ('', (404, '404')),
             (CURRENT_USER, (304, ''))
-        ]
+        ],
+        ids=['existing_user', 'not_existing_user', 'empty_username_param', 'current_user']
     )
     @pytest.mark.API
     @allure.title('Разблокировка пользователя')
@@ -246,10 +255,12 @@ class TestAuth(ApiBase):
             ('', EXISTING_PASSWORD, (200, 'Welcome to the TEST SERVER')),
             ('wrong_login', 'wrong_password', (401, 'Invalid username or password')),
             (''.join(random.choice(string.ascii_letters) for i in range(2)), 'qazswxde', (401, 'Incorrect username length')),
-            (''.join(random.choice(string.ascii_letters) for i in range(19)), 'qazswxde', (401, 'Incorrect username length')),
+            (''.join(random.choice(string.ascii_letters) for i in range(17)), 'qazswxde', (401, 'Incorrect username length')),
             (EXISTING_USERNAME, 'incorrect_pass', (401, 'Invalid username or password')),
             ('incorrect_name', EXISTING_PASSWORD, (401, 'Invalid username or password')),
-        ]
+        ],
+        ids=['empty_login_and_pass', 'empty_pass', 'empty_login', 'wrong_login_and_pass', 'short_login', 'long_login',
+             'wrong_pass', 'wrong_login']
     )
     @pytest.mark.API
     @allure.title('Неуспешная авторизация')
@@ -314,7 +325,10 @@ class TestRegistration(ApiBase):
              None, 'Incorrect password length'),
             (None, None, '', 'qazswxde', 'Registration'),
             ('', None, 'qazswxde', 'qazswxde', 'Registration')
-        ]
+        ],
+        ids=['long_name', 'short_name', 'empty_email', 'long_email', 'short_email', 'invalid_email_at',
+             'invalid_email_point', 'invalid_email', 'empty_confirm_pass', 'not_matching_passwords', 'long_pass',
+             'empty_pass', 'empty_username']
     )
     @pytest.mark.API
     @allure.title('Регистрация пользователя с невалидными данными')
@@ -327,7 +341,8 @@ class TestRegistration(ApiBase):
 
     @pytest.mark.parametrize(
         'term',
-        ['', 'n', 123]
+        ['', 'n', 123],
+        ids=['empty_term', 'term_n', 'term_123']
     )
     @pytest.mark.API
     @allure.title('Регистрация пользователя без принятия согласия')
@@ -344,7 +359,8 @@ class TestRegistration(ApiBase):
             (None, EXISTING_EMAIL, None, (409, 'User already exists')),
             (EXISTING_USERNAME, None, None, (409, 'User already exists')),
             (None, None, EXISTING_PASSWORD, (200, 'Logged as')),
-        ]
+        ],
+        ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.API
     @allure.title('Регистрация существующего пользователя')

@@ -81,3 +81,6 @@ def logger(test_dir, config):
     for handler in log.handlers:
         handler.close()
 
+    with open(log_file, 'r') as f:
+        allure.attach(f.read(), 'test.log', attachment_type=allure.attachment_type.TEXT)
+
