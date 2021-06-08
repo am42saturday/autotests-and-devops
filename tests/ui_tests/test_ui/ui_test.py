@@ -6,7 +6,6 @@ from ui_tests.ui.locators.pages_locators import MainPageLocators
 
 main_page_locators = MainPageLocators()
 
-
 EXISTING_USERNAME = object()
 EXISTING_PASSWORD = object()
 EXISTING_EMAIL = object()
@@ -31,7 +30,9 @@ class TestLogin(BaseCase):
             ('Sqazwsxedcrfvtgby', 'qazswxde', 'Incorrect username length'),
             (EXISTING_USERNAME, 'incorrect_pass', 'Invalid username or password'),
             ('incorrect_name', EXISTING_PASSWORD, 'Invalid username or password'),
-        ]
+        ],
+        ids=['empty_login_and_pass', 'empty_login', 'empty_pass', 'wrong_login_and_pass', 'short_login', 'long_pass',
+             'wrong_pass', 'wrong_login']
     )
     @pytest.mark.UI
     @allure.description('Негативный тест на авторизацию')
@@ -81,7 +82,10 @@ class TestRegistration(BaseCase):
                          'rtyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqw'
                          'ertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwerty',
              None, 'Incorrect password length')
-        ]
+        ],
+        ids=['long_username', 'short_username', 'empty_email', 'long_email', 'short_email', 'invalid_email_at',
+             'invalid_email_dot', 'invalid_email', 'empty_confirm_pass', 'not_matching_passwords', 'empty_pass',
+             'empty_username', 'long_pass']
     )
     @pytest.mark.UI
     @allure.description('Тест регистрации пользователя с невалидными данными')
@@ -104,7 +108,8 @@ class TestRegistration(BaseCase):
             (None, EXISTING_EMAIL, 'qazswxde', 'User already exists'),
             (EXISTING_USERNAME, 'normal@email.com', 'qazswxde', 'User already exists'),
             (None, None, EXISTING_PASSWORD, 'Logged as'),
-        ]
+        ],
+        ids=['existing_email', 'existing_username', 'existing_pass']
     )
     @pytest.mark.UI
     @allure.description('Тест на попытку зарегистрировать пользователя с данными уже существующего пользователя')
@@ -139,17 +144,20 @@ class TestMainPage(BaseCase):
             ((main_page_locators.PYTHON_DROPDOWN_LOCATOR, main_page_locators.PYTHON_HISTORY_BUTTON_LOCATOR),
              'History of Python'),
             ((main_page_locators.PYTHON_DROPDOWN_LOCATOR, main_page_locators.ABOUT_FLASK_BUTTON_LOCATOR), 'Flask'),
-            ((main_page_locators.LINUX_DROPDOWN_LOCATOR, main_page_locators.DOWNLOAD_CENTOS_BUTTON_LOCATOR), 'Download Centos7'),
+            ((main_page_locators.LINUX_DROPDOWN_LOCATOR, main_page_locators.DOWNLOAD_CENTOS_BUTTON_LOCATOR),
+             'Download Centos7'),
             ((main_page_locators.NETWORK_DROPDOWN_LOCATOR, main_page_locators.WIRESHARK_NEWS_BUTTON_LOCATOR),
              'Wireshark'),
             ((main_page_locators.NETWORK_DROPDOWN_LOCATOR, main_page_locators.DOWNLOAD_WIRESHARK_BUTTON_LOCATOR),
              'Download Wireshark'),
             ((main_page_locators.NETWORK_DROPDOWN_LOCATOR, main_page_locators.TCPDUMP_EXAMPLES_BUTTON_LOCATOR),
-            'Tcpdump Examples'),
+             'Tcpdump Examples'),
             ([main_page_locators.API_BUTTON_LOCATOR], 'API'),
             ([main_page_locators.FUTURE_OF_INTERNET_BUTTON_LOCATOR], 'What Will the Internet Be'),
             ([main_page_locators.SMTP_BUTTON_LOCATOR], 'SMTP'),
-        ]
+        ],
+        ids=['open_python', 'open_flask', 'open_centos', 'open_wireshark', 'Open_download_wireshark', 'open_TCPDUMP',
+             'open_API', 'open_internet', 'open_SMTP']
     )
     @pytest.mark.UI
     @allure.description('Проверка открытия всех ссылок в новых вкладок')
@@ -162,7 +170,8 @@ class TestMainPage(BaseCase):
             (main_page_locators.PYTHON_DROPDOWN_LOCATOR, ('Python history', 'About Flask')),
             (main_page_locators.LINUX_DROPDOWN_LOCATOR, ('Download Centos7')),
             (main_page_locators.NETWORK_DROPDOWN_LOCATOR, ('Wireshark', 'News', 'Download', 'Tcpdump', 'Examples'))
-        ]
+        ],
+        ids=['dropdown_python', 'dropdown_linux', 'dropdown_network']
     )
     @pytest.mark.UI
     @allure.description('Проверка открытия всех выпадающих списков на панели навигации')

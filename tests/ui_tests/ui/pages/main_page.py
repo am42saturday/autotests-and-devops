@@ -1,5 +1,3 @@
-import time
-
 import allure
 
 from ui_tests.data import BASE_TIMEOUT
